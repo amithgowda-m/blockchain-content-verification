@@ -8,7 +8,7 @@ const API_BASE_URL = process.env.NODE_ENV === 'production'
 
 // Fallback for development
 const DEV_API_URL = 'http://localhost:3001/api';
-const PROD_API_URL = 'https://your-app.cyclic.app/api'; // Replace with your Cyclic URL
+const PROD_API_URL = 'blockchain-content-verification-production.up.railway.app'; // Replace with your Cyclic URL
 
 function App() {
   const [prompt, setPrompt] = useState('');
