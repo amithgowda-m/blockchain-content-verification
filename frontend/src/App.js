@@ -1,7 +1,14 @@
 import React, { useState } from 'react';
 import './App.css';
 
-const API_BASE_URL = 'http://localhost:3001/api';
+// Dynamic API URL for different environments
+const API_BASE_URL = process.env.NODE_ENV === 'production' 
+  ? `${window.location.origin}/api`  // Same origin in production
+  : 'http://localhost:3001/api';
+
+// Fallback for development
+const DEV_API_URL = 'http://localhost:3001/api';
+const PROD_API_URL = 'https://your-app.cyclic.app/api'; // Replace with your Cyclic URL
 
 function App() {
   const [prompt, setPrompt] = useState('');
@@ -17,6 +24,14 @@ function App() {
   const [adminData, setAdminData] = useState(null);
   const [deleteKeyword, setDeleteKeyword] = useState('');
 
+  // Get the correct API URL
+  const getApiUrl = () => {
+    if (window.location.hostname === 'localhost') {
+      return DEV_API_URL;
+    }
+    return PROD_API_URL;
+  };
+
   const generateContent = async () => {
     if (!prompt || !author) {
       alert('Please enter both author name and prompt');
@@ -26,7 +41,8 @@ function App() {
     setLoading(true);
     setGenerationInfo(null);
     try {
-      const response = await fetch(`${API_BASE_URL}/generate-content`, {
+      const apiUrl = getApiUrl();
+      const response = await fetch(`${apiUrl}/generate-content`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -64,7 +80,8 @@ function App() {
 
     setLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/verify-content`, {
+      const apiUrl = getApiUrl();
+      const response = await fetch(`${apiUrl}/verify-content`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -83,7 +100,8 @@ function App() {
   const verifyByHash = async (hash) => {
     setLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/verify/${hash}`);
+      const apiUrl = getApiUrl();
+      const response = await fetch(`${apiUrl}/verify/${hash}`);
       const data = await response.json();
       setVerificationResult(data);
       setActiveTab('verify');
@@ -105,7 +123,8 @@ function App() {
   // Admin Panel Functions
   const fetchStoredData = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/records`);
+      const apiUrl = getApiUrl();
+      const response = await fetch(`${apiUrl}/records`);
       const data = await response.json();
       setAdminData(data);
     } catch (error) {
@@ -116,7 +135,8 @@ function App() {
   const deleteContent = async (contentHash) => {
     if (window.confirm('Are you sure you want to delete this content?')) {
       try {
-        const response = await fetch(`${API_BASE_URL}/api/delete/${contentHash}`, {
+        const apiUrl = getApiUrl();
+        const response = await fetch(`${apiUrl}/delete/${contentHash}`, {
           method: 'DELETE'
         });
         const data = await response.json();
@@ -133,7 +153,8 @@ function App() {
   const deleteAllContent = async () => {
     if (window.confirm('⚠️ ARE YOU SURE? This will delete ALL generated content!')) {
       try {
-        const response = await fetch(`${API_BASE_URL}/api/delete-all`, {
+        const apiUrl = getApiUrl();
+        const response = await fetch(`${apiUrl}/delete-all`, {
           method: 'DELETE'
         });
         const data = await response.json();
@@ -155,7 +176,8 @@ function App() {
     
     if (window.confirm(`Delete all content containing "${deleteKeyword}"?`)) {
       try {
-        const response = await fetch(`${API_BASE_URL}/api/delete-by-prompt/${encodeURIComponent(deleteKeyword)}`, {
+        const apiUrl = getApiUrl();
+        const response = await fetch(`${apiUrl}/delete-by-prompt/${encodeURIComponent(deleteKeyword)}`, {
           method: 'DELETE'
         });
         const data = await response.json();
@@ -175,6 +197,9 @@ function App() {
       <header className="app-header">
         <h1>🧠 AI Content Authentication</h1>
         <p>Generate AI content with blockchain-proof authorship</p>
+        <div className="environment-badge">
+          {window.location.hostname === 'localhost' ? '🚀 Development' : '🌐 Production'}
+        </div>
       </header>
 
       <div className="app-container">
@@ -483,8 +508,12 @@ function App() {
                 <span className="tech-badge">Ethereum</span>
                 <span className="tech-badge">SHA-256</span>
                 <span className="tech-badge">AI APIs</span>
+                <span className="tech-badge">Cyclic</span>
+                <span className="tech-badge">Vercel</span>
               </div>
             </div>
+
+            
           </div>
         )}
 
@@ -498,6 +527,7 @@ function App() {
                 {adminData && (
                   <div className="storage-info">
                     <p><strong>Total Records:</strong> {adminData.count}</p>
+                    
                     <button 
                       onClick={fetchStoredData}
                       className="refresh-btn"
@@ -568,6 +598,7 @@ function App() {
             ) : (
               <div className="no-records">
                 <p>No content stored in memory.</p>
+                <p><em>Note: Content is stored in memory and resets when server restarts</em></p>
               </div>
             )}
           </div>
@@ -575,8 +606,8 @@ function App() {
       </div>
 
       <footer className="app-footer">
-        <p>Built for Blockchain Hackathon | AI Content Authentication System</p>
-        <p>🔗 Blockchain Verified | 🤖 AI Powered | 🔐 Cryptographically Secure</p>
+        <p>Built for BlockQuest | AI Content Authentication System</p>
+        <p> Blockchain Verified | AI Powered | Cryptographically Secure</p>
       </footer>
     </div>
   );
