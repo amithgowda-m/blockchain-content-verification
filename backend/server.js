@@ -17,6 +17,17 @@ const blockchainService = new BlockchainService();
 
 const contentDatabase = new Map();
 
+// const PORT = process.env.PORT || 3001; // Render uses different ports
+
+// Also update CORS for production:
+app.use(cors({
+  origin: [
+    'http://localhost:3000',
+    'https://ai-content-auth-frontend.onrender.com' // Will be auto-generated
+  ],
+  credentials: true
+}));
+
 
 app.get('/', (req, res) => {
     res.json({
